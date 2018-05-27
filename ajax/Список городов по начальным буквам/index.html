@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+    <form onsubmit="alert('Выбран город с кодом '+getObj('city').value);return false;">
+    <p><b>Введите город:</b>
+        <input id="city" name="city" size="30" autocomplete="OFF" onkeyup='PressKey(event)' /><br>
+        <select id="info" size=5 style='visibility:hidden;position:absolute;z-index:999;'
+                onchange="getObj('city').value=ot=this.options[this.selectedIndex].value"
+                onkeyup='PressKey2(event)' ondblclick='this.form.onsubmit()'>
+        </select>
+    </form>
+
+<script type="text/javascript"><!--
+    var ot="", timer=0, x=-1,y=0;
+    //g=getObj('city').onkeyup=PressKey; // альтернативный вариант назначения обработчика
+
+
+    function PressKey2(e){ // вызывается при нажатии клавиши в select
+        e=e||window.event;
+        t=(window.event) ? window.event.srcElement : e.currentTarget; // объект для которого вызывно
+        if(e.keyCode==13){ // Enter
+            t=(window.event) ? window.event.srcElement : e.currentTarget; // объект для которого вызывно
+            t.form.onsubmit();
+            return;}
+        if(e.keyCode==38&&t.selectedIndex==0){ // Up
+            getObj('city').focus();
+            getObj('info').style.visibility = 'hidden'; // спрячем select
+        }
+    }
+    // Определение координаты элемента
+    function pageX(elem) {
+        return elem.offsetParent ?
+            elem.offsetLeft + pageX( elem.offsetParent ) :
+            elem.offsetLeft;
+    }
+    function pageY(elem) {
+        return elem.offsetParent ?
+            elem.offsetTop + pageY( elem.offsetParent ) :
+            elem.offsetTop;
+    }
+
+    function PressKey(e){
+        e=e||window.event;
+        t=(window.event) ? window.event.srcElement : e.currentTarget; // объект для которого вызвано
+        g=getObj('info');
+        if(x==-1&&y==0){// при первом обращении просчитываю координаты
+            x=pageX(t); y=pageY(t);
+            g.style.top = y + t.clientHeight+1 + "px";
+            g.style.left = x + "px";
+        }
+        if(e.keyCode==40){g.focus();g.selectedIndex=0;return;}
+        if(ot==t.value)return; // если ничего не изменилось не "замучить" сервер
+        ot=t.value;
+        if(timer){clearTimeout(timer);timer=0;}
+        if(ot.length<3){
+            getObj('info').style.visibility = 'hidden'; // спрячем select
+            return;}
+        timer=window.setTimeout('Load()',1000);  // загружаю через 1 секунду после последнего нажатия клавиши
+    }
+
+    function Load(){
+        timer=0;
+        o=getObj('info');
+        o.options.length=0;
+        ajaxLoad('info', '/geo/api.php?city_name='+ot, '','','');
+        o.style.visibility='visible';
+    }
+    getObj('city').focus();
+
+    function getObj(objID)
+    {if (document.getElementById) {return document.getElementById(objID);}
+    else if (document.all) {return document.all[objID];}
+    else if (document.layers) {return document.layers[objID];}
+    }
+
+    function ajaxLoad(obj,url,defMessage,post,callback){
+        var ajaxObj;
+        if (defMessage) document.getElementById(obj).innerHTML=defMessage;
+        if(window.XMLHttpRequest){
+            ajaxObj = new XMLHttpRequest();
+        } else if(window.ActiveXObject){
+            ajaxObj = new ActiveXObject("Microsoft.XMLHTTP");
+        } else {
+            return;
+        }
+        ajaxObj.open ((post?'POST':'GET'), url);
+        if (post&&ajaxObj.setRequestHeader)
+            ajaxObj.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
+
+        ajaxObj.onreadystatechange = ajaxCallBack(obj,ajaxObj,(callback?callback:null));
+        ajaxObj.send(post);
+        return false;
+    }
+
+    function updateObj(obj, data, bold, blink){
+        if(bold)data=data.bold();
+        if(blink)data=data.blink();
+        document.getElementById(obj).innerHTML = data; // упрощенный вариант, работает не во всех браузерах
+    }
+
+    function ajaxCallBack(obj, ajaxObj, callback){
+        return function(){
+            if(ajaxObj.readyState == 4){
+                if(callback) if(!callback(obj,ajaxObj))return;
+                if (ajaxObj.status==200)
+                    updateObj(obj, ajaxObj.responseText);
+                else updateObj(obj, ajaxObj.status+' '+ajaxObj.statusText,1,1);
+            }
+        }}
+
+
+    //-->
+</script>
+</body>
+</html>

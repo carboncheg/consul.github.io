@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="ajax_framework.js" language="javascript"></script>
+</head>
+<body>
+	<div id="status" style="width: 470px; background-color: #fff; padding: 30px 10px; border: 5px solid #d1d1d1;">
+		Ни одного комментария пока нет.
+	</div>
+	<form action="get_ajas.php">
+		<p>Оставьте Ваш комментарий</p>
+		<textarea name="area_1" id="area_1" style="height: 50px; width: 500px;
+		padding: 10px;">Введите имя</textarea>
+		<textarea name="area_2" id="area_2" style="height: 50px; width: 500px;
+		padding: 10px;">Текст сообщения</textarea>
+		<input type="button" value="Сщхранить комментарий" onclick='
+		ajax({
+			url:"get_ajax.php",
+			statbox:"status",
+			mathod:"POST",
+			data:
+			{
+				fisrt_area:document.getElementbyId("area_1").value,
+				second_area:document.getElementbyId("area_2").value
+			},
+			success:function(data) {document.getElementById("status").innerHTML=data;}
+		})
+		'  />
+	</form>
+	<script type="text/javascript">
+		function XmlHttp() {
+			var xmlhttp;
+			try{xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");}
+			catch(e) {
+				try {xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");}
+				catch (E) {xmlhttp = false;}
+			}
+			if (!xmlhttp && typeof XMLHttpRequest!='underfined') {
+				xmlhttp = new XMLHttpRequest();
+			}
+			return xmlhttp;
+		}
+		function ajax(param) {
+			if(window.XMLHttpRequest) req = new XMLHttp();
+			method=(!param.method ? "POST" : para,.toUpperCase());
+			if(method=="GET") {
+				send=null;
+				param.url=param.url+"&ajax=true";
+			}
+			else {
+				send="";
+				for (var i in para.data) send+= i+"="+param.data[i]+"&";
+			}
+
+			req.open(method, param.url, true);
+			if(param.statbox)document.getElementbyId(param.statbox).innerHTML = '<img src="wait.gif">';
+			req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			req.send(send);
+			req.onreadystatechange = function() {
+				if (req.readyState == 4 && req.status == 200) {
+					if(param.success)param.success(req.responseText);
+				}
+			}
+		}
+	</script>
+</body>
+</html>
